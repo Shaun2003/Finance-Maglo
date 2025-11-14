@@ -1,0 +1,117 @@
+import React, { useState } from "react";
+import { Button } from "../../../components/ui/button";
+
+interface Wallet {
+  id: string;
+  name: string;
+  balance: number;
+  currency: string;
+}
+
+interface WalletListProps {
+  wallets: Wallet[];
+  onDelete: (id: string) => void;
+  onUpdateBalance: (id: string, balance: number) => void;
+}
+
+export const WalletList: React.FC<WalletListProps> = ({
+  wallets,
+  onDelete,
+  onUpdateBalance,
+}) => {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editBalance, setEditBalance] = useState("");
+
+  const handleEditClick = (wallet: Wallet) => {
+    setEditingId(wallet.id);
+    setEditBalance(wallet.balance.toString());
+  };
+
+  const handleSaveBalance = (walletId: string) => {
+    const newBalance = parseFloat(editBalance);
+    if (!isNaN(newBalance)) {
+      onUpdateBalance(walletId, newBalance);
+      setEditingId(null);
+    }
+  };
+
+  if (wallets.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-text-colortext-2">No wallets yet</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {wallets.map((wallet) => (
+        <div
+          key={wallet.id}
+          className="p-6 bg-white rounded-lg border border-graygray-3 hover:border-primary-color transition shadow-sm"
+        >
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-text-colortext-1">
+                {wallet.name}
+              </h3>
+              <p className="text-sm text-text-colortext-2">{wallet.currency}</p>
+            </div>
+            <Button
+              onClick={() => onDelete(wallet.id)}
+              size="sm"
+              variant="outline"
+              className="text-red-600 hover:text-red-700 text-xs"
+            >
+              Delete
+            </Button>
+          </div>
+
+          <div className="mb-4">
+            {editingId === wallet.id ? (
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editBalance}
+                  onChange={(e) => setEditBalance(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-graygray-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-color text-sm"
+                />
+                <Button
+                  onClick={() => handleSaveBalance(wallet.id)}
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 text-white text-xs"
+                >
+                  Save
+                </Button>
+                <Button
+                  onClick={() => setEditingId(null)}
+                  size="sm"
+                  variant="outline"
+                  className="text-xs"
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm text-text-colortext-2 mb-1">Balance</p>
+                <p className="text-3xl font-bold text-primary-color">
+                  ${wallet.balance.toFixed(2)}
+                </p>
+                <Button
+                  onClick={() => handleEditClick(wallet)}
+                  size="sm"
+                  variant="outline"
+                  className="mt-3 text-xs"
+                >
+                  Edit Balance
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
